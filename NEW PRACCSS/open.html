@@ -1,95 +1,479 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Jarvis Reactor Spin</title>
+  <title>Jarvis Voice Activated UI</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="st.css" />
   <link rel="icon" href="favicon.ico">
 </head>
+<style>
+  body {
+    margin: 0;
+    background: #0d1117;
+    overflow-x: auto;
+    overflow-y: auto;
+    font-family: 'Audiowide', sans-serif;
+  }
+  
+  #start-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0d1117;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    cursor: pointer;
+    transition: opacity 0.5s;
+  }
+  
+  .start-text {
+    font-size: 2em;
+    color: #00ffff;
+    text-shadow: 0 0 15px #00ffff;
+    animation: glowTextPulse 2s infinite ease-in-out;
+  }
+
+  .command-list {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+    text-align: left;
+    z-index: 10;
+    padding: 10px;
+    border-radius: 10px;
+    background: #0d111799;
+  }
+  .command-list h3 {
+    margin: 0 0 10px 0;
+    text-decoration: underline;
+  }
+  .command-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .jarvis-container {
+    position: absolute;
+    top: 150px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    z-index: 1;
+  }
+
+  .rotating-aura {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    z-index: 1;
+  }
+
+  .rotating-aura::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg,
+      transparent 0%, #00ffff40 10%,
+      transparent 30%, #00ffff30 60%,
+      transparent 100%);
+    filter: blur(30px);
+    opacity: 0.9;
+  }
+
+  .rotating-aura.active {
+    animation: spinUp 3s ease-in forwards,
+               spinMid 1.5s linear forwards 3s,
+               spinMid1 0.3s linear forwards 4.5s,
+               spinMid2 1s linear infinite 4.8s;
+  }
+
+  .static-core {
+    position: absolute;
+    top: 150px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 3px solid #00ffff;
+    box-shadow: 0 0 40px #00ffff;
+    z-index: 2;
+    background-color: transparent;
+  }
+  
+  .static-core.awake {
+      animation: pulseCoreGlow 1.5s infinite ease-in-out;
+  }
+  
+  .beam {
+    position: absolute;
+    top: calc(50% + 76px);
+    left: 50%;
+    width: 4px;
+    height: 0;
+    background: #00ffff;
+    transform: translateX(-50%);
+    box-shadow: 0 0 20px #00ffff;
+    opacity: 0;
+  }
+  
+  .beam.active {
+    animation: beamDrop 2s ease-out forwards 2s;
+  }
+
+  .reciver-circle {
+    position: absolute;
+    top: 375px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    border: 2px solid #00ffff;
+    background: #000000;
+    box-shadow: 0 0 0 #00ffff;
+    opacity: 0;
+    z-index: 3;
+  }
+
+  .reciver-circle.active {
+    animation: glowRec-circle 1s ease-out forwards 4s,
+               pulseGlow 2s ease-in-out infinite 5s;
+    opacity: 1;
+  }
+
+  .hori {
+    position: absolute;
+    bottom: 50%;
+    height: 4px;
+    width: 0;
+    transform: translateY(-50%);
+    z-index: 2;
+    background: #00ffff;
+    box-shadow: 0 0 10px #00ffff;
+    opacity: 0;
+  }
+
+  .hori.active {
+    animation: beamSpread 1.5s forwards ease-out 5.5s;
+    opacity: 1;
+  }
+
+  .right-beam { left: 100%; }
+  .left-beam { right: 100%; }
+
+  .side-beam {
+    position: absolute;
+    width: 4px;
+    height: 0;
+    background: #00ffff;
+    opacity: 0;
+  }
+
+  .side-beam.active {
+    animation: beamDrop 1s forwards ease-in-out, pulseGlow 2s infinite ease-in-out;
+    animation-delay: 7s;
+    opacity: 1;
+  }
+
+  .l1beam { top: 390px; left: calc(50% - 250px - 15px); }
+  .r1beam { top: 390px; right: calc(50% - 250px - 15px); }
+  .l2beam { top: 940px; left: calc(50% - 250px - 15px); }
+  .r2beam { top: 940px; right: calc(50% - 250px - 15px); }
+
+  .lbox, .rbox {
+    position: absolute;
+    top: 540px;
+    display: flex;
+    flex-direction: column;
+    gap: 146px;
+  }
+
+  .lbox { right: calc(50% + 150px + 4px); }
+  .rbox { left: calc(50% + 150px + 4px); }
+
+  .box {
+    height: 400px;
+    width: 500px;
+    border: 2px solid #00ffff;
+    border-radius: 10px;
+    background: transparent;
+    color: transparent;
+    box-shadow: none;
+    text-shadow: none;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .box.active {
+    animation: glowRec-box 0.6s ease-out forwards;
+  }
+
+  .box h1, .box li {
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid #00ffff;
+    color: transparent;
+    text-shadow: none;
+    opacity: 0;
+  }
+
+  .box li {
+      font-size: 2em;
+  }
+  
+  .box h1 {
+      text-decoration: underline;
+  }
+
+  .box h1.active, .box li.active {
+    animation: revealText 0.6s ease-out forwards,
+               typing 1.5s steps(20, end) forwards,
+               glowTextPulse 2s infinite ease-in-out 1.6s;
+    opacity: 1;
+  }
+  
+  #small li {
+      font-size: 1.5em;
+  }
+
+  /* --- KEYFRAMES --- */
+  
+  @keyframes pulseCoreGlow {
+      0%, 100% { box-shadow: 0 0 40px #00ffff; }
+      50% { box-shadow: 0 0 60px #00ffff, 0 0 100px #00ffff; }
+  }
+
+  @keyframes typing { from { width: 0; } to { width: 100%; border-color: transparent; } }
+  @keyframes revealText { 0% { color: transparent; text-shadow: none; } 100% { color: #00ffff; text-shadow: 0 0 10px #00ffff; } }
+  @keyframes glowTextPulse { 0%, 100% { text-shadow: 0 0 10px #00ffff; } 50% { text-shadow: 0 0 20px #00ffff; } }
+  @keyframes beamDrop { 0% { height: 0; opacity: 0; } 30% { opacity: 1; } 100% { height: 150px; opacity: 1; } }
+  
+  @keyframes glowRec-circle {
+    0% { opacity: 0; }
+    100% { opacity: 1; background: #00000044; box-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff; }
+  }
+
+  @keyframes glowRec-box {
+    0% { background: transparent; box-shadow: 0 0 0 #00ffff00; }
+    100% { background: #00000044; box-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff; }
+  }
+
+  @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; } 50% { box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff; } }
+  @keyframes spinUp { 0% { transform: rotate(0deg); } 100% { transform: rotate(540deg); } }
+  @keyframes spinMid { from { transform: rotate(540deg); } to { transform: rotate(900deg); } }
+  @keyframes spinMid1 { from { transform: rotate(900deg); } to { transform: rotate(1260deg); } }
+  @keyframes spinMid2 { from { transform: rotate(1260deg); } to { transform: rotate(1620deg); } }
+  @keyframes beamSpread { 0% { width: 0px; } 100% { width: 250px; } }
+</style>
 <body>
+  <div id="start-screen">
+    <div class="start-text">Click to Activate Jarvis</div>
+  </div>
+
+  <div class="command-list">
+    <h3>Say "Hey Jarvis" to Activate</h3>
+    <h3>Available Commands:</h3>
+    <ul>
+      <li>start</li>
+      <li>show skills</li>
+      <li>show projects</li>
+      <li>show certifications</li>
+      <li>contact me</li>
+      <li>shut down</li>
+    </ul>
+  </div>
+
   <div class="jarvis-container">
     <div class="rotating-aura"></div>
-    <div class="static-core">
-      <div class="arc-react">
-        <div class="arc"></div>
-        <div class="outer-arc"></div>
-        <div class="middle-arc"></div>
-        <div class="inner-arc"></div>
-      </div>
-    </div>
-
+    <div class="static-core"></div>
     <div class="beam"></div>
     <div class="reciver-circle">
       <div class="hori left-beam"></div>
       <div class="hori right-beam"></div>
     </div>
-    <div class="r1beam"></div>
-    <div class="l1beam"></div>
-
+    <div class="side-beam l1beam"></div>
+    <div class="side-beam r1beam"></div>
 
     <div class="lbox">
-      <div class="box lubox f">
+      <div class="box skills-box">
         <h1>SKILLS:</h1>
-        <ol>
-          <li>Front End Web Dev</li>
+        <ol class="list">
+          <li>Front End Development</li>
           <li>Python</li>
           <li>Java</li>
-          <li>C</li>
-
+          <li>Machine Learning</li>
+          <li>SQLite</li>
         </ol>
       </div>
-      <div class="box ldbox s">
+      <div class="box projects-box">
         <h1>PROJECTS:</h1>
+        <ol class="list">
+          <li>Project Opectra</li>
+          <li>Noetics</li>
+          <li>EDU2JOB</li>
+        </ol>
       </div>
     </div>
 
-    
     <div class="rbox">
-      <div class="box rubox f">
-        <h1>ABOUT ME:</h1>
+      <div class="box cert-box">
+        <h1>CERTIFICATIONS:</h1>
+        <ol class="list" id="small">
+          <li>MICROSOFT AI AZURE</li>
+          <li>INFOSYS PYTHON-STACK INTERN</li>
+          <li>PYTHON BY GOOGLE</li>
+        </ol>
       </div>
-      <div class="box rdbox s">
+      <div class="box contact-box">
         <h1>CONTACT ME:</h1>
+        <ol class="list">
+          <li>Mail: sc566964@gmail.com</li>
+          <li>Instagram: siva_2853</li>
+        </ol>
       </div>
     </div>
 
- \
-    <div class="l2beam"></div>
-    <div class="r2beam"></div>
+    <div class="side-beam l2beam"></div>
+    <div class="side-beam r2beam"></div>
   </div>
-  <script>
+
+<script>
+  const startScreen = document.getElementById('start-screen');
+  const staticCore = document.querySelector('.static-core');
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
+  
   recognition.continuous = true;
   recognition.interimResults = false;
   recognition.lang = 'en-US';
 
+  let systemState = 'IDLE'; // Possible states: IDLE, AWAKE, ACTIVE
+  let hasRecognitionStarted = false;
+  let awakeTimeout;
+
+  const revealListItems = (selector) => {
+    const listItems = document.querySelectorAll(selector);
+    listItems.forEach((li, i) => {
+      setTimeout(() => li.classList.add("active"), 500 + i * 600);
+    });
+  };
+  
+  const showSection = (boxSelector, h1Selector, listSelector) => {
+      document.querySelector(boxSelector).classList.add("active");
+      document.querySelector(h1Selector).classList.add("active");
+      revealListItems(listSelector);
+  };
+
+  const shutdownSystem = () => {
+    console.log("❌ System Shutdown command recognized!");
+    document.querySelectorAll('.active').forEach(el => el.classList.remove("active"));
+    systemState = 'IDLE';
+  };
+
   recognition.onresult = function(e) {
     const transcript = e.results[e.results.length - 1][0].transcript.toLowerCase().trim();
-    console.log('Command:', transcript);
+    console.log(`State: ${systemState} | Heard: ${transcript}`);
 
-    if (transcript.includes("show skills")) {
-      document.querySelector('.lubox').style.opacity = '1';
-    } else if (transcript.includes("show projects")) {
-      document.querySelector('.ldbox').style.opacity = '1';
-    } else if (transcript.includes("about me")) {
-      document.querySelector('.rubox').style.opacity = '1';
-    } else if (transcript.includes("contact me")) {
-      document.querySelector('.rdbox').style.opacity = '1';
-    } else if (transcript.includes("activate jarvis")) {
-      document.querySelector('.rotating-aura').style.boxShadow = '0 0 100px cyan, 0 0 200px cyan';
-    } else if (transcript.includes("shutdown")) {
-      document.querySelectorAll('.box').forEach(box => box.style.opacity = '0');
-      document.querySelector('.rotating-aura').style.boxShadow = 'none';
+    switch (systemState) {
+      case 'IDLE':
+        if (transcript.includes("jarvis")) {
+          console.log("✅ Wake word detected! System is now AWAKE.");
+          systemState = 'AWAKE';
+          staticCore.classList.add('awake');
+          
+          clearTimeout(awakeTimeout);
+          awakeTimeout = setTimeout(() => {
+            console.log("No command received, going back to sleep.");
+            staticCore.classList.remove('awake');
+            systemState = 'IDLE';
+          }, 5000);
+        }
+        break;
+
+      case 'AWAKE':
+        clearTimeout(awakeTimeout);
+
+        if (transcript.includes("start")) {
+          console.log("✅ Start command recognized! System is now ACTIVE.");
+          systemState = 'ACTIVE';
+          staticCore.classList.remove('awake');
+          
+          document.querySelector(".rotating-aura").classList.add("active");
+          document.querySelector(".beam").classList.add("active");
+          document.querySelector(".reciver-circle").classList.add("active");
+          document.querySelectorAll(".hori").forEach(h => h.classList.add("active"));
+          document.querySelectorAll(".side-beam").forEach(b => b.classList.add("active"));
+        } else if (transcript.includes("shut down") || transcript.includes("go to sleep")) {
+            staticCore.classList.remove('awake');
+            shutdownSystem();
+        } else {
+          console.log("Command not applicable in AWAKE state. Going back to sleep.");
+          staticCore.classList.remove('awake');
+          systemState = 'IDLE';
+        }
+        break;
+
+      case 'ACTIVE':
+        if (transcript.includes("show skills")) {
+          console.log("Showing Skills...");
+          showSection('.skills-box', '.skills-box h1', '.skills-box li');
+        } else if (transcript.includes("show projects")) {
+          console.log("Showing Projects...");
+          showSection('.projects-box', '.projects-box h1', '.projects-box li');
+        } else if (transcript.includes("show certifications")) {
+          console.log("Showing Certifications...");
+          showSection('.cert-box', '.cert-box h1', '.cert-box li');
+        } else if (transcript.includes("contact me")) {
+          console.log("Showing Contact Info...");
+          showSection('.contact-box', '.contact-box h1', '.contact-box li');
+        } 
+        else if (transcript.includes("shut down")) {
+          shutdownSystem();
+        }
+        break;
     }
   };
 
-  recognition.start();
-</script>
+  recognition.onstart = () => console.log("🎤 Listening for commands...");
+  recognition.onerror = e => console.error("Speech Recognition Error:", e.error);
+  recognition.onend = () => {
+    if(hasRecognitionStarted) {
+        console.log("🎤 Speech recognition service disconnected, restarting...");
+        recognition.start();
+    }
+  };
 
+  startScreen.addEventListener('click', () => {
+      if (!hasRecognitionStarted) {
+          try {
+              recognition.start();
+              hasRecognitionStarted = true;
+              startScreen.style.opacity = '0';
+              setTimeout(() => startScreen.style.display = 'none', 500);
+          } catch(error) {
+              console.error("Could not start recognition:", error);
+          }
+      }
+  });
+</script>
 </body>
 </html>
