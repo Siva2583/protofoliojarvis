@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jarvis Reactor Spin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="st.css" />
+  <link rel="icon" href="favicon.ico">
+</head>
+<body>
+  <div class="jarvis-container">
+    <div class="rotating-aura"></div>
+    <div class="static-core">
+      <div class="arc-react">
+        <div class="arc"></div>
+        <div class="outer-arc"></div>
+        <div class="middle-arc"></div>
+        <div class="inner-arc"></div>
+      </div>
+    </div>
+
+    <div class="beam"></div>
+    <div class="reciver-circle">
+      <div class="hori left-beam"></div>
+      <div class="hori right-beam"></div>
+    </div>
+    <div class="r1beam"></div>
+    <div class="l1beam"></div>
+
+
+    <div class="lbox">
+      <div class="box lubox f">
+        <h1>SKILLS:</h1>
+        <ol>
+          <li>Front End Web Dev</li>
+          <li>Python</li>
+          <li>Java</li>
+          <li>C</li>
+
+        </ol>
+      </div>
+      <div class="box ldbox s">
+        <h1>PROJECTS:</h1>
+      </div>
+    </div>
+
+    
+    <div class="rbox">
+      <div class="box rubox f">
+        <h1>ABOUT ME:</h1>
+      </div>
+      <div class="box rdbox s">
+        <h1>CONTACT ME:</h1>
+      </div>
+    </div>
+
+ \
+    <div class="l2beam"></div>
+    <div class="r2beam"></div>
+  </div>
+  <script>
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = false;
+  recognition.lang = 'en-US';
+
+  recognition.onresult = function(e) {
+    const transcript = e.results[e.results.length - 1][0].transcript.toLowerCase().trim();
+    console.log('Command:', transcript);
+
+    if (transcript.includes("show skills")) {
+      document.querySelector('.lubox').style.opacity = '1';
+    } else if (transcript.includes("show projects")) {
+      document.querySelector('.ldbox').style.opacity = '1';
+    } else if (transcript.includes("about me")) {
+      document.querySelector('.rubox').style.opacity = '1';
+    } else if (transcript.includes("contact me")) {
+      document.querySelector('.rdbox').style.opacity = '1';
+    } else if (transcript.includes("activate jarvis")) {
+      document.querySelector('.rotating-aura').style.boxShadow = '0 0 100px cyan, 0 0 200px cyan';
+    } else if (transcript.includes("shutdown")) {
+      document.querySelectorAll('.box').forEach(box => box.style.opacity = '0');
+      document.querySelector('.rotating-aura').style.boxShadow = 'none';
+    }
+  };
+
+  recognition.start();
+</script>
+
+</body>
+</html>
